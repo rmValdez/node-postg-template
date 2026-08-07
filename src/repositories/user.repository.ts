@@ -1,5 +1,5 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../utils/prisma';
-import { UserRole } from '@prisma/client';
 
 export default class UserRepository {
   /**
@@ -23,7 +23,7 @@ export default class UserRepository {
   /**
    * Create a new user
    */
-  static async create(data: any) {
+  static async create(data: Prisma.UserCreateInput) {
     return prisma.user.create({
       data,
     });
@@ -32,7 +32,7 @@ export default class UserRepository {
   /**
    * Update user details
    */
-  static async update(id: string, data: any) {
+  static async update(id: string, data: Prisma.UserUpdateInput) {
     return prisma.user.update({
       where: { id },
       data: { ...data, updatedAt: new Date() },
@@ -50,7 +50,7 @@ export default class UserRepository {
   }
 
   /**
-   * List all users (paginated)
+   * List all users (paginated). Never selects `password`.
    */
   static async findAll(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
@@ -60,6 +60,7 @@ export default class UserRepository {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        omit: { password: true },
       }),
       prisma.user.count({ where: { isDeleted: false } }),
     ]);
