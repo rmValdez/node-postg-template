@@ -1,5 +1,5 @@
 import { PrismaClient, UserRole } from '@prisma/client';
-import crypto from 'crypto';
+import { hashPassword } from '../../src/utils/password.util';
 
 /**
  * Seeds initial users with PBKDF2 hashed passwords
@@ -43,10 +43,8 @@ export async function seedUsers(prisma: PrismaClient) {
     });
 
     if (!existingUser) {
-      // Hash password using the same method as AuthSvc
-      const salt = crypto.randomBytes(16).toString('hex');
-      const hash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
-      const hashedPassword = `${salt}:${hash}`;
+      // Hash password using the same method as AuthSvc (bcrypt)
+      const hashedPassword = await hashPassword(password);
 
       await prisma.user.create({
         data: {

@@ -2,6 +2,7 @@ import { Prisma } from '@prisma/client';
 import UserRepository from '../repositories/user.repository';
 import { rabbitmq } from '../infrastructure/rabbitmq';
 import { ROUTING_KEYS } from '../events/routing-keys';
+import { hashPassword } from '../utils/password.util';
 
 export default class UserService {
   /**
@@ -28,7 +29,10 @@ export default class UserService {
    */
   static async createUser(data: Prisma.UserCreateInput) {
     // 1. Business Logic / Database Action
-    const user = await UserRepository.create(data);
+    const user = await UserRepository.create({
+      ...data,
+      password: data.password ? await hashPassword(data.password) : data.password,
+    });
 
     // 2. Publish Domain Event
     await rabbitmq.publish(ROUTING_KEYS.USER_CREATED, {

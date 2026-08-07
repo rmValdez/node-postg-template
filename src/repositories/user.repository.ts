@@ -50,7 +50,7 @@ export default class UserRepository {
   }
 
   /**
-   * List all users (paginated)
+   * List all users (paginated). Never selects `password`.
    */
   static async findAll(page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
@@ -60,6 +60,7 @@ export default class UserRepository {
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
+        omit: { password: true },
       }),
       prisma.user.count({ where: { isDeleted: false } }),
     ]);
