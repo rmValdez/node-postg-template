@@ -7,7 +7,7 @@ Reference documentation for building and consuming the REST API.
 ## Base URL
 
 ```
-http://localhost:3002/api
+http://localhost:5002/api
 ```
 
 All endpoints are prefixed with `/api/v1` except health checks.
@@ -21,10 +21,10 @@ This API uses **JWT Bearer tokens**.
 ### Register / Login Flow
 
 ```
-POST /api/v1/auth/register   → returns { accessToken, refreshToken }
-POST /api/v1/auth/login      → returns { accessToken, refreshToken }
-POST /api/v1/auth/refresh    → exchange refreshToken for a new accessToken
-POST /api/v1/auth/logout     → invalidate tokens
+POST /api/v1/auth/register       → returns { accessToken, refreshToken }
+POST /api/v1/auth/login          → returns { accessToken, refreshToken }
+POST /api/v1/auth/refresh-token  → exchange refreshToken for a new accessToken
+POST /api/v1/auth/logout         → invalidate tokens
 ```
 
 ### Using the Token
@@ -36,6 +36,39 @@ Authorization: Bearer <accessToken>
 ```
 
 Tokens expire after `1d` by default (`ACCESS_TOKEN_EXPIRY` in `.env`).
+
+---
+
+## Service-to-Service Auth (X-API-Key)
+
+For requests from _another backend_ rather than a logged-in user — no JWT,
+no user session, just a shared secret identifying which service is calling.
+
+Configure one key per calling service in `.env`:
+
+```
+API_KEYS="partner-a:8f2c9e1a...,internal-billing:1a9d4b7c..."
+```
+
+Generate a key:
+
+```
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Callers send it as a header:
+
+```
+GET /api/v1/partner/users
+X-API-Key: 8f2c9e1a...
+```
+
+Routes under `/api/v1/partner` are protected by the `apiKeyAuth` middleware
+([src/middleware/apiKey.middleware.ts](../src/middleware/apiKey.middleware.ts))
+instead of `authenticate`. It resolves the key to a client name (`req.apiClient`)
+so you can log/authorize per-integration, and never mix `apiKeyAuth` with
+`authenticate` on the same route — they answer different questions ("which
+service is this" vs "which user is this").
 
 ---
 
@@ -154,12 +187,12 @@ x-correlation-id: my-trace-id-12345
 
 ### Authentication
 
-| Method | Endpoint                | Auth | Description          |
-| ------ | ----------------------- | ---- | -------------------- |
-| `POST` | `/api/v1/auth/register` | ❌   | Create account       |
-| `POST` | `/api/v1/auth/login`    | ❌   | Sign in              |
-| `POST` | `/api/v1/auth/refresh`  | ❌   | Refresh access token |
-| `POST` | `/api/v1/auth/logout`   | ✅   | Sign out             |
+| Method | Endpoint                     | Auth | Description          |
+| ------ | ---------------------------- | ---- | -------------------- |
+| `POST` | `/api/v1/auth/register`      | ❌   | Create account       |
+| `POST` | `/api/v1/auth/login`         | ❌   | Sign in              |
+| `POST` | `/api/v1/auth/refresh-token` | ❌   | Refresh access token |
+| `POST` | `/api/v1/auth/logout`        | ✅   | Sign out             |
 
 **Register request:**
 
@@ -187,11 +220,11 @@ x-correlation-id: my-trace-id-12345
 
 ### Users
 
-| Method | Endpoint           | Auth | Description                      |
-| ------ | ------------------ | ---- | -------------------------------- |
-| `GET`  | `/api/v1/users/me` | ✅   | Get authenticated user's profile |
-| `GET`  | `/api/v1/users`    | ✅   | List all users (paginated)       |
-| `POST` | `/api/v1/users`    | ✅   | Create a new user                |
+| Method | Endpoint           | Auth | Description                                         |
+| ------ | ------------------ | ---- | --------------------------------------------------- |
+| `GET`  | `/api/v1/users/me` | ✅   | Get authenticated user's profile                    |
+| `GET`  | `/api/v1/users`    | ✅   | List all users (paginated) — `ADMIN`+ role required |
+| `POST` | `/api/v1/users`    | ✅   | Create a new user — `ADMIN`+ role required          |
 
 ---
 
@@ -228,7 +261,7 @@ Rate limiting is disabled in `development` mode.
 
 ## Interactive Docs
 
-Open [http://localhost:3002/api/docs](http://localhost:3002/api/docs) in your browser for the full Swagger UI with request/response examples and a built-in API tester.
+Open [http://localhost:5002/api/docs](http://localhost:5002/api/docs) in your browser for the full Swagger UI with request/response examples and a built-in API tester.
 
 > Available in development mode only.
 

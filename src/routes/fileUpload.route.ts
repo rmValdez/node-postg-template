@@ -4,6 +4,28 @@ import logger from '../utils/logger';
 
 const router = express.Router();
 
+/**
+ * @swagger
+ * /v1/file-uploads/upload:
+ *   post:
+ *     summary: Upload a file (multipart/form-data, max 20MB)
+ *     tags: [File Uploads]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: Upload metadata (name, size, mimetype)
+ *       400:
+ *         description: No file uploaded or file type not allowed
+ */
 router.post('/upload', upload.single('file'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ message: 'No file uploaded' });

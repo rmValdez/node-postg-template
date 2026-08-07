@@ -28,6 +28,12 @@ const options: swaggerJsdoc.Options = {
           bearerFormat: 'JWT',
           description: 'Enter your JWT access token.',
         },
+        ApiKeyAuth: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-API-Key',
+          description: 'Service-to-service key for another backend (see /v1/partner routes).',
+        },
       },
       schemas: {
         SuccessResponse: {
