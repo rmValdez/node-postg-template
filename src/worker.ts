@@ -1,6 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// Must be imported before anything that pulls in express/other instrumented
+// modules, so Sentry's auto-instrumentation can patch them first.
+import { Sentry } from './instrument';
+
 import os from 'os';
 import http from 'http';
 import { rabbitmq } from './infrastructure/rabbitmq';
@@ -109,9 +113,11 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 process.on('unhandledRejection', (reason) => {
   logger.error('[Worker] Unhandled Rejection:', reason);
+  Sentry.captureException(reason);
 });
 
 process.on('uncaughtException', (error) => {
   logger.error('[Worker] Uncaught Exception:', error);
+  Sentry.captureException(error);
   process.exit(1);
 });
