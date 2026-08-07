@@ -1,8 +1,9 @@
 import express from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
+import * as Sentry from '@sentry/node';
 import router from './routes';
-import { isDev } from './config';
+import { isDev, CORS_ORIGINS, SENTRY_DSN } from './config';
 import setup from './setup';
 import cors from 'cors';
 import { errorHandler } from './middleware/error.middleware';
@@ -17,9 +18,12 @@ app.set('trust proxy', 1);
 // Assign correlationId + requestId to every request (must be first)
 app.use(correlationMiddleware);
 
+// Wildcard + credentials is invalid for cookie/session-based auth and a real
+// security gap otherwise. Dev reflects any origin for convenience; production
+// requires an explicit allow-list via CORS_ORIGIN.
 app.use(
   cors({
-    origin: '*',
+    origin: isDev ? true : CORS_ORIGINS,
     credentials: true,
   }),
 );
@@ -52,6 +56,12 @@ if (isDev) {
       customCss: '.swagger-ui .topbar { display: none }',
     }),
   );
+}
+
+// Reports errors to Sentry, then passes them on — errorHandler below still
+// owns the actual JSON response. No-op when SENTRY_DSN is unset.
+if (SENTRY_DSN) {
+  Sentry.setupExpressErrorHandler(app);
 }
 
 // Error Handling
