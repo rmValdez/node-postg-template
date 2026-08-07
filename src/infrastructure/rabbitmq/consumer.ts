@@ -80,7 +80,7 @@ export const consume = async <T>(
       try {
         await handler(payload, metadata);
         channel.ack(msg);
-      } catch (error) {
+      } catch (_error) {
         if (retryCount < MAX_RETRIES) {
           logger.warn(
             `[RabbitMQ] Handler failed for ${queueName}. Retrying (${retryCount + 1}/${MAX_RETRIES})...`,

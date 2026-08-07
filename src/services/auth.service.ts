@@ -105,7 +105,7 @@ export default class AuthSvc {
           onboardingCompleted: user.onboardingCompleted,
         },
       };
-    } catch (error) {
+    } catch (_error) {
       throw { status: 401, message: 'Invalid refresh token' };
     }
   }
