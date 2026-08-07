@@ -115,11 +115,16 @@ src/infrastructure/
 This is how you verify the system works end-to-end:
 
 ```bash
-# Send a request
-curl -X POST http://localhost:3002/api/v1/users \
+# 0. POST /v1/users requires an ADMIN+ role — log in as a seeded admin first
+#    (see prisma/seeders/users.seeder.ts) and grab the accessToken
+TOKEN="<accessToken from POST /v1/auth/login>"
+
+# 1. Send a request with a correlation ID
+curl -X POST http://localhost:5002/api/v1/users \
+  -H "Authorization: Bearer $TOKEN" \
   -H "x-correlation-id: test-trace-001" \
   -H "Content-Type: application/json" \
-  -d '{ "email": "test@example.com", "password": "Test1234!" }'
+  -d '{ "email": "test@example.com", "password": "Test1234!", "username": "testuser" }'
 
 # In your API logs:
 # 10:00:00 info [corr:test-trace-001]: User created successfully
@@ -375,9 +380,11 @@ Push to main/develop
 .github/workflows/ci.yml
 │
 ├─ TypeScript type check (npx tsc --noEmit)
+├─ Prettier format check (npm run format:check)
 ├─ ESLint (npm run lint)
 ├─ Unit tests (npm run test:unit)
-└─ Integration tests (npm run test:integration)
+├─ Integration tests (npm run test:integration)
+└─ Upload coverage report (artifact, always runs)
 ```
 
 All checks must pass before merging to `main`.
@@ -389,10 +396,17 @@ All checks must pass before merging to `main`.
 Before deploying to production:
 
 - [ ] All environment variables set (check against `.env.example`)
+- [ ] `ACCESS_TOKEN_SECRET` / `REFRESH_TOKEN_SECRET` set to strong unique
+      values — app refuses to start in production on the insecure defaults
+- [ ] `CORS_ORIGIN` set to your real frontend origin(s) — production has no
+      wildcard fallback
 - [ ] `REDIS_TLS=true` if using managed Redis (ElastiCache, Upstash)
 - [ ] `NODE_ENV=production` (disables Swagger UI, enables JSON logging)
 - [ ] Health probes configured in Kubernetes/ECS (`/api/health/live`, `/api/health/ready`)
 - [ ] Worker health probe configured (`WORKER_HEALTH_PORT/health`)
 - [ ] Dead letter queues monitored (RabbitMQ management plugin or Datadog)
 - [ ] Log aggregation configured (CloudWatch, Datadog, etc.)
+- [ ] `SENTRY_DSN` set if you want error tracking (unset = fully disabled)
+- [ ] `API_KEYS` issued per partner backend if any `/v1/partner`-style
+      routes are exposed
 - [ ] Rate limiting reviewed for your expected traffic volume

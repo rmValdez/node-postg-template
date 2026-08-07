@@ -194,24 +194,28 @@ x-correlation-id: my-trace-id-12345
 | `POST` | `/api/v1/auth/refresh-token` | ❌   | Refresh access token |
 | `POST` | `/api/v1/auth/logout`        | ✅   | Sign out             |
 
-**Register request:**
+**Register request** (`username` is required, `name` is optional):
 
 ```json
 {
   "email": "user@example.com",
-  "password": "MySecureP@ssw0rd!"
+  "password": "MySecureP@ssw0rd!",
+  "username": "someuser"
 }
 ```
 
-**Login response:**
+**Login response** — note: auth endpoints don't use the standard
+`{status, statusCode, data}` envelope (see [Response Format](#response-format))
+— `login`/`register` wrap in `{message, data}`, and `refresh-token` returns a
+bare object with no wrapper at all:
 
 ```json
 {
-  "status": "success",
-  "statusCode": 200,
+  "message": "Login successful",
   "data": {
     "accessToken": "eyJhbGc...",
-    "refreshToken": "eyJhbGc..."
+    "refreshToken": "eyJhbGc...",
+    "user": { "id": "uuid", "email": "user@example.com", "role": "USER", "...": "..." }
   }
 }
 ```

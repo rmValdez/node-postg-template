@@ -189,19 +189,39 @@ If Redis is down, the function still runs normally — the cache never blocks yo
 
 ## Authentication
 
-The `authMiddleware` is already set up. Protect a route like this:
+The `authenticate` middleware is already set up. Protect a route like this:
 
 ```typescript
-import { authMiddleware } from '../middleware/auth.middleware';
+import { authenticate } from '../middleware/auth.middleware';
 
-router.get('/me', authMiddleware, UserController.getMe);
+router.get('/me', authenticate, UserController.getMe);
 ```
 
-Inside the controller, the authenticated user is available on `req.user`:
+Inside the controller, the authenticated user is available on `req.user` —
+no cast needed, it's typed via declaration merging in `auth.middleware.ts`:
 
 ```typescript
-const userId = (req as any).user?.id;
+const userId = req.user?.id;
 ```
+
+### Authorization (Roles)
+
+Need to restrict a route to certain roles on top of `authenticate`? Add
+`requireRole`:
+
+```typescript
+import { authenticate } from '../middleware/auth.middleware';
+import { requireRole } from '../middleware/role.middleware';
+
+router.get('/', authenticate, requireRole('ADMIN', 'SUPER_ADMIN'), UserController.index);
+```
+
+For requests from another backend instead of a logged-in user, use
+`apiKeyAuth` (X-API-Key header) instead — see
+[`src/routes/partner.route.ts`](../src/routes/partner.route.ts) and the
+[API Guide](./api-guide.md#service-to-service-auth-x-api-key). Never combine
+`authenticate`/`requireRole` with `apiKeyAuth` on the same route — they
+answer different questions ("which user" vs "which service").
 
 ---
 

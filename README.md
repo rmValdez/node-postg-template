@@ -34,11 +34,13 @@
 | **Message Broker** | RabbitMQ (Topic Exchange, DLQ, Retries)              |
 | **Cache / State**  | Redis (TLS-ready, cache-aside pattern)               |
 | **Authentication** | JWT (Access + Refresh tokens)                        |
+| **Authorization**  | Role-based (`requireRole`) + X-API-Key service auth  |
 | **Validation**     | Joi                                                  |
 | **Email**          | Nodemailer + Handlebars templates (Ethereal for dev) |
 | **Scheduling**     | node-cron                                            |
 | **Logging**        | Winston (JSON in prod / colorized in dev)            |
-| **Security**       | Helmet, CORS, express-rate-limit                     |
+| **Error Tracking** | Sentry (optional — no-op until `SENTRY_DSN` is set)  |
+| **Security**       | Helmet, CORS allow-list, express-rate-limit          |
 | **API Docs**       | Swagger / OpenAPI (dev only)                         |
 | **Testing**        | Jest + ts-jest + Supertest                           |
 | **CI/CD**          | GitHub Actions                                       |
@@ -152,8 +154,8 @@ npm run worker
 
 | Service            | URL                                      |
 | ------------------ | ---------------------------------------- |
-| API                | `http://localhost:3002`                  |
-| Swagger Docs       | `http://localhost:3002/api/docs`         |
+| API                | `http://localhost:5002`                  |
+| Swagger Docs       | `http://localhost:5002/api/docs`         |
 | RabbitMQ Dashboard | `http://localhost:15672` (guest / guest) |
 | Worker Health      | `http://localhost:8080/health`           |
 
@@ -168,9 +170,12 @@ src/
 ├── repositories/           # Data access via Prisma
 ├── middleware/
 │   ├── correlation.middleware.ts   # Assigns requestId + correlationId to every request
-│   ├── auth.middleware.ts
+│   ├── auth.middleware.ts         # JWT bearer auth — populates req.user
+│   ├── role.middleware.ts         # requireRole(...roles) — role-based access
+│   ├── apiKey.middleware.ts       # apiKeyAuth — X-API-Key service-to-service auth
 │   ├── error.middleware.ts
-│   └── validation.middleware.ts
+│   ├── request-id.middleware.ts
+│   └── upload.middleware.ts
 ├── infrastructure/
 │   ├── rabbitmq/           # connection, publisher, consumer, exchanges
 │   ├── redis/              # connection singleton (TLS-ready)
@@ -194,13 +199,16 @@ src/
 │   └── emails/
 │       └── welcome.hbs     # Example Handlebars email template
 ├── routes/
+├── instrument.ts           # Sentry.init() — must load before express (see server.ts/worker.ts)
 ├── worker.ts               # Worker process entry point
 └── server.ts               # API process entry point
 
 tests/
 ├── unit/
 │   ├── password.util.test.ts
-│   └── pagination.helper.test.ts
+│   ├── pagination.helper.test.ts
+│   ├── role.middleware.test.ts
+│   └── apiKey.middleware.test.ts
 └── integration/
     └── health.test.ts
 ```
@@ -440,6 +448,49 @@ No data is silently lost. Inspect failed messages in the RabbitMQ dashboard at `
 
 ---
 
+## 🔐 Authorization
+
+Two independent mechanisms answer two different questions — never mix them on
+the same route.
+
+### Role-Based Access Control
+
+`requireRole(...roles)` checks the authenticated user's `role`
+(`USER` / `ADMIN` / `SUPER_ADMIN` / `DEVELOPER`) after `authenticate` has run:
+
+```typescript
+import { authenticate } from '../middleware/auth.middleware';
+import { requireRole } from '../middleware/role.middleware';
+
+router.get(
+  '/',
+  authenticate,
+  requireRole('ADMIN', 'SUPER_ADMIN', 'DEVELOPER'),
+  UserController.index,
+);
+```
+
+This is intentionally a flat role tier, not a permissions system — see the
+Roadmap if you need per-permission granularity later.
+
+### Service-to-Service Auth (X-API-Key)
+
+For requests from _another backend_, not a logged-in user. Configure one key
+per calling service via `API_KEYS` (`name:key,name2:key2`), then protect
+routes with `apiKeyAuth` instead of `authenticate`:
+
+```typescript
+import { apiKeyAuth } from '../middleware/apiKey.middleware';
+
+router.use(apiKeyAuth); // resolves the key to req.apiClient
+```
+
+See `src/routes/partner.route.ts` for the worked example, and the
+[API Guide](./docs/api-guide.md#service-to-service-auth-x-api-key) for the
+full header/config reference.
+
+---
+
 ## 🧰 Helpers Reference
 
 ### `responseSuccess` / `responseError`
@@ -529,12 +580,16 @@ const isValid = await verifyPassword(plainText, hash);
 
 Before deploying:
 
-- [ ] Change JWT secrets (`ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`)
+- [ ] Change JWT secrets (`ACCESS_TOKEN_SECRET`, `REFRESH_TOKEN_SECRET`) — app
+      refuses to start in production on the insecure defaults
+- [ ] Set `CORS_ORIGIN` to your real frontend origin(s)
 - [ ] Enable HTTPS / TLS on your load balancer
 - [ ] Configure SMTP provider credentials
 - [ ] Configure Redis TLS (`REDIS_TLS=true`)
 - [ ] Configure RabbitMQ credentials and virtual host
 - [ ] Enable log aggregation (Datadog, CloudWatch, etc.)
+- [ ] Set `SENTRY_DSN` if you want error tracking (unset = fully disabled)
+- [ ] Issue `API_KEYS` per partner backend if exposing `/v1/partner`-style routes
 - [ ] Run database migrations (`npx prisma migrate deploy`)
 - [ ] Verify readiness endpoints (`/api/health/ready`)
 - [ ] Configure database backup strategy
@@ -566,49 +621,54 @@ PostgreSQL     Redis     CloudWatch
 
 ## 🛠️ Scripts
 
-| Command                    | Description                    |
-| -------------------------- | ------------------------------ |
-| `npm run dev`              | Start API server (Nodemon)     |
-| `npm run worker`           | Start Worker process (Nodemon) |
-| `npm run build`            | Compile TypeScript → `dist/`   |
-| `npm start`                | Start compiled API             |
-| `npm test`                 | Run all tests                  |
-| `npm run test:unit`        | Unit tests only                |
-| `npm run test:integration` | Integration tests only         |
-| `npm run test:coverage`    | Tests with coverage report     |
-| `npm run lint`             | Lint and auto-fix              |
-| `npm run db:setup`         | Prisma generate + migrate      |
-| `npm run db:seed`          | Run database seed              |
+| Command                    | Description                                 |
+| -------------------------- | ------------------------------------------- |
+| `npm run dev`              | Start API server (Nodemon)                  |
+| `npm run worker`           | Start Worker process (Nodemon)              |
+| `npm run build`            | Compile TypeScript → `dist/`                |
+| `npm start`                | Start compiled API                          |
+| `npm test`                 | Run all tests                               |
+| `npm run test:unit`        | Unit tests only                             |
+| `npm run test:integration` | Integration tests only                      |
+| `npm run kill-port`        | Free port `5002` if something's stuck on it |
+| `npm run test:coverage`    | Tests with coverage report                  |
+| `npm run lint`             | Lint and auto-fix                           |
+| `npm run db:setup`         | Prisma generate + migrate                   |
+| `npm run db:seed`          | Run database seed                           |
 
 ---
 
 ## 🔑 Environment Variables
 
-| Variable                | Default                             | Description                       |
-| ----------------------- | ----------------------------------- | --------------------------------- |
-| `PORT`                  | `3002`                              | API server port                   |
-| `NODE_ENV`              | `development`                       | Environment                       |
-| `DATABASE_URL`          | —                                   | Prisma connection string          |
-| `ACCESS_TOKEN_SECRET`   | —                                   | JWT signing secret                |
-| `REFRESH_TOKEN_SECRET`  | —                                   | JWT refresh secret                |
-| `REDIS_HOST`            | `localhost`                         | Redis host                        |
-| `REDIS_PORT`            | `6379`                              | Redis port                        |
-| `REDIS_TLS`             | `false`                             | Enable TLS (ElastiCache, Upstash) |
-| `REDIS_TTL_SECONDS`     | `3600`                              | Default cache TTL                 |
-| `RABBITMQ_URL`          | `amqp://guest:guest@localhost:5672` | AMQP connection URL               |
-| `WORKER_HEALTH_PORT`    | `8080`                              | Worker health probe port          |
-| `METRICS_INTERVAL_MS`   | `60000`                             | Worker metrics log interval       |
-| `MAILER_TRANSPORT_HOST` | `smtp.ethereal.email`               | SMTP host                         |
-| `MAILER_EMAIL`          | —                                   | SMTP user                         |
-| `MAILER_PASSWORD`       | —                                   | SMTP password                     |
+| Variable               | Default                             | Description                                          |
+| ---------------------- | ----------------------------------- | ---------------------------------------------------- |
+| `PORT`                 | `5002`                              | API server port                                      |
+| `NODE_ENV`             | `development`                       | Environment                                          |
+| `DATABASE_URL`         | —                                   | Prisma connection string                             |
+| `CORS_ORIGIN`          | —                                   | Comma-separated allowed origins (required in prod)   |
+| `ACCESS_TOKEN_SECRET`  | —                                   | JWT signing secret (must be set in prod, no default) |
+| `REFRESH_TOKEN_SECRET` | —                                   | JWT refresh secret (must be set in prod, no default) |
+| `ACCESS_TOKEN_EXPIRY`  | `1d`                                | Access token lifetime                                |
+| `API_KEYS`             | —                                   | `name:key,name2:key2` — X-API-Key service auth       |
+| `REDIS_HOST`           | `localhost`                         | Redis host                                           |
+| `REDIS_PORT`           | `6379`                              | Redis port                                           |
+| `REDIS_TLS`            | `false`                             | Enable TLS (ElastiCache, Upstash)                    |
+| `REDIS_TTL_SECONDS`    | `3600`                              | Default cache TTL                                    |
+| `RABBITMQ_URL`         | `amqp://guest:guest@localhost:5672` | AMQP connection URL                                  |
+| `WORKER_HEALTH_PORT`   | `8080`                              | Worker health probe port                             |
+| `METRICS_INTERVAL_MS`  | `60000`                             | Worker metrics log interval                          |
+| `SMTP_HOST`            | `smtp.ethereal.email`               | SMTP host                                            |
+| `SMTP_USER`            | —                                   | SMTP user                                            |
+| `SMTP_PASS`            | —                                   | SMTP password                                        |
+| `SENTRY_DSN`           | —                                   | Error tracking; unset = Sentry fully disabled        |
 
-See `.env.example` for the full list including AWS, Google OAuth, and WebSub.
+See `.env.example` for the complete list — every variable there is actually read somewhere in `src/config.ts`.
 
 ---
 
 ## 🚀 Roadmap
 
-- [ ] Role-Based Access Control (RBAC)
+- [ ] Fine-grained permissions (beyond role tiers — see [Authorization](#-authorization))
 - [ ] Refresh token rotation
 - [ ] Audit logging consumer
 - [ ] Prometheus + Grafana metrics
