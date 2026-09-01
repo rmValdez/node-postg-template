@@ -1,5 +1,6 @@
 import logger from "./utils/logger";
 import RedisUtil from "./utils/redis.util";
+import { verifyMailer } from "./utils/mailer.util";
 
 /**
  * Initial setup logic for the application
@@ -9,6 +10,9 @@ export default async function setup() {
   
   // Initialize Redis
   await RedisUtil.initialize();
+  
+  // Verify Mailer Transport
+  await verifyMailer();
   
   logger.info("Setup completed.");
 }

@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import UserService from "../services/user.service";
+import { parsePagination, buildPage } from "../helpers/pagination.helper";
+import { responseSuccess, responseError } from "../helpers/response.helper";
 
 export default class UserController {
   /**
@@ -8,26 +10,31 @@ export default class UserController {
   static async getMe(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user?.id;
-      if (!userId) return res.status(401).json({ message: "Unauthorized" });
+      if (!userId) return responseError(res, 401, "Unauthorized");
 
       const user = await UserService.getUser(userId);
-      return res.json({ status: "success", data: user });
+      return responseSuccess(res, 200, user, "Profile fetched successfully");
     } catch (error) {
       next(error);
     }
   }
 
   /**
-   * List users
+   * List users (with search and pagination)
    */
   static async index(req: Request, res: Response, next: NextFunction) {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 10;
-      const data = await UserService.listUsers(page, limit);
-      return res.json({ status: "success", data });
+      const params = parsePagination(req.query);
+      const result = await UserService.listUsers(params.page, params.limit);
+      return responseSuccess(
+        res,
+        200,
+        buildPage(result.users, result.total, params),
+        "Users retrieved successfully"
+      );
     } catch (error) {
       next(error);
     }
   }
 }
+

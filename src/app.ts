@@ -4,19 +4,17 @@ import helmet from "helmet";
 import router from "./routes";
 import { isDev } from "./config";
 import setup from "./setup";
-import cors from "cors";
+import { corsMiddleware } from "./middleware/cors.middleware";
+import { tenantMiddleware } from "./middleware/tenant.middleware";
 import { errorHandler } from "./middleware/error.middleware";
 
 const app = express();
 
 app.set("trust proxy", 1);
 
-app.use(
-  cors({
-    origin: "*",
-    credentials: true,
-  }),
-);
+app.use(corsMiddleware);
+app.options('*', corsMiddleware);
+app.use(tenantMiddleware);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -5,18 +5,24 @@ export default class RedisUtil {
   static client: RedisClientType;
 
   static async initialize() {
-    this.client = createClient({
-      password: REDIS_PASSWORD,
-      socket: {
-        host: REDIS_HOST,
-        port: REDIS_PORT,
-      },
-    }) as RedisClientType;
+    try {
+      this.client = createClient({
+        password: REDIS_PASSWORD,
+        socket: {
+          host: REDIS_HOST,
+          port: REDIS_PORT,
+          connectTimeout: 2000,
+          reconnectStrategy: false,
+        },
+      }) as RedisClientType;
 
-    this.client.on("error", (err) => console.error("Redis Client Error", err));
+      this.client.on("error", (err) => console.warn(`[Redis] Offline notice: ${err.message}`));
 
-    await this.client.connect();
-    console.log(`[Redis] Connected to ${REDIS_HOST}:${REDIS_PORT}`);
+      await this.client.connect();
+      console.log(`[Redis] Connected to ${REDIS_HOST}:${REDIS_PORT}`);
+    } catch (err: any) {
+      console.warn(`[Redis] Optional Redis connection skipped: ${err?.message || err}`);
+    }
   }
 
   /**

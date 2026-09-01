@@ -7,8 +7,24 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Tenant {
+  id          String         @id @default(uuid())
+  slug        String         @unique // "angular-v4", "next-v1", "vue-v3", "nuxt-v2"
+  name        String         // "Angular 19 Master Template", etc.
+  description String?
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  users       User[]
+  topics      AngularTopic[]
+  quizQuestions QuizQuestion[]
+  quizProgress QuizProgress[]
+}
+
 model User {
   id                  String                 @id @default(uuid())
+  tenantId            String?
   email               String                 @unique
   password            String?                // Optional for social-only users
   name                String?
@@ -22,9 +38,38 @@ model User {
   isDeleted           Boolean                @default(false)
   isEmailVerified     Boolean                @default(true)
   onboardingCompleted Boolean                @default(false)
+  
+  tenant              Tenant?                @relation(fields: [tenantId], references: [id], onDelete: SetNull)
   avatar              File?                  @relation("UserAvatar", fields: [avatarId], references: [id])
   sessions            Session[]
   socialAccounts      SessionSocialAccount[]
+  angularTopics       AngularTopic[]
+  quizProgress        QuizProgress[]
+
+  @@index([tenantId])
+}
+
+model AngularTopic {
+  id          String          @id @default(uuid())
+  tenantId    String?
+  title       String
+  slug        String          @unique
+  description String?
+  category    AngularCategory @default(SIGNALS)
+  codeSnippet String?         @db.Text
+  difficulty  String          @default("beginner") // beginner | intermediate | advanced
+  isCompleted Boolean         @default(false)
+  likesCount  Int             @default(0)
+  authorId    String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  tenant      Tenant?         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  author      User?           @relation(fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([category])
+  @@index([slug])
 }
 
 model Session {
@@ -75,3 +120,55 @@ enum UserRole {
   SUPER_ADMIN
   DEVELOPER
 }
+
+enum AngularCategory {
+  SIGNALS
+  CONTROL_FLOW
+  COMPONENTS
+  FORMS
+  ROUTING
+  SERVICES
+  HTTP_QUERY
+  SOCKETS
+}
+
+model QuizQuestion {
+  id           Int      @id
+  tenantId     String?
+  category     String
+  difficulty   String   @default("INTERMEDIATE") // BEGINNER | INTERMEDIATE | ADVANCED | EXPERT
+  question     String   @db.Text
+  codeSnippet  String?  @db.Text
+  options      String[]
+  correctIndex Int
+  explanation  String   @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  tenant       Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([category])
+  @@index([difficulty])
+}
+
+model QuizProgress {
+  id            String   @id @default(uuid())
+  tenantId      String?
+  userId        String?
+  sessionId     String   @default("default-session")
+  answers       Json     @default("{}")
+  score         Int      @default(0)
+  answeredCount Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant        Tenant?  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, sessionId])
+  @@index([tenantId])
+  @@index([userId])
+}
+
+
