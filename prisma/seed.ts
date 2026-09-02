@@ -2,7 +2,8 @@ import { PrismaClient } from "@prisma/client";
 import { seedTenants } from "./seeders/tenants.seeder";
 import { seedUsers } from "./seeders/users.seeder";
 import { seedAngularTopics } from "./seeders/angular.seeder";
-import { seedQuizQuestions } from "./seeders/quiz.seeder";
+import { seedAngularQuizQuestions } from "./seeders/angular-quiz.seeder";
+import { seedVueQuizQuestions } from "./seeders/vue-quiz.seeder";
 
 const prisma = new PrismaClient();
 
@@ -13,7 +14,8 @@ async function main() {
     await seedTenants(prisma);
     await seedUsers(prisma);
     await seedAngularTopics(prisma);
-    await seedQuizQuestions(prisma);
+    await seedAngularQuizQuestions(prisma);
+    await seedVueQuizQuestions(prisma);
     console.log("🎉 All seeder modules executed successfully!");
   } catch (error) {
     console.error("❌ Seeding failed:", error);
