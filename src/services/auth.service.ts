@@ -9,6 +9,7 @@ import {
   ACCESS_TOKEN_EXPIRY,
   REFRESH_TOKEN_EXPIRY,
 } from "../config";
+import { getPermissionsForRole } from "../constants/permissions.constant";
 
 export default class AuthSvc {
   /**
@@ -98,6 +99,7 @@ export default class AuthSvc {
           role: user.role,
           avatar: user.avatar?.fileUrl,
           onboardingCompleted: user.onboardingCompleted,
+          permissions: getPermissionsForRole(user.role),
         },
       };
     } catch (error) {
@@ -150,6 +152,7 @@ export default class AuthSvc {
         role: user.role,
         avatar: user.avatar?.fileUrl,
         onboardingCompleted: user.onboardingCompleted,
+        permissions: getPermissionsForRole(user.role),
       },
     };
   }

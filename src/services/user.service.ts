@@ -1,4 +1,5 @@
 import UserRepository from "../repositories/user.repository";
+import { getPermissionsForRole } from "../constants/permissions.constant";
 import logger from "../utils/logger";
 
 export default class UserService {
@@ -11,13 +12,23 @@ export default class UserService {
       throw { status: 404, message: "User not found" };
     }
     const { password, ...userWithoutPassword } = user;
-    return userWithoutPassword;
+    return {
+      ...userWithoutPassword,
+      permissions: getPermissionsForRole(user.role),
+    };
   }
 
   /**
-   * List users hehe
+   * List users
    */
   static async listUsers(page?: number, limit?: number) {
-    return UserRepository.findAll(page, limit);
+    const result = await UserRepository.findAll(page, limit);
+    return {
+      ...result,
+      users: result.users.map((u: any) => ({
+        ...u,
+        permissions: getPermissionsForRole(u.role),
+      })),
+    };
   }
 }
