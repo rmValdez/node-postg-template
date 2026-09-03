@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from "express";
-import UserService from "../services/user.service";
-import { parsePagination, buildPage } from "../helpers/pagination.helper";
-import { responseSuccess, responseError } from "../helpers/response.helper";
+import { Request, Response, NextFunction } from 'express';
+import UserService from '../services/user.service';
+import { parsePagination, buildPage } from '../helpers/pagination.helper';
+import { responseSuccess, responseError } from '../helpers/response.helper';
 
 export default class UserController {
   /**
@@ -10,10 +10,10 @@ export default class UserController {
   static async getMe(req: Request, res: Response, next: NextFunction) {
     try {
       const userId = (req as any).user?.id;
-      if (!userId) return responseError(res, 401, "Unauthorized");
+      if (!userId) return responseError(res, 401, 'Unauthorized');
 
       const user = await UserService.getUser(userId);
-      return responseSuccess(res, 200, user, "Profile fetched successfully");
+      return responseSuccess(res, 200, user, 'Profile fetched successfully');
     } catch (error) {
       next(error);
     }
@@ -30,11 +30,10 @@ export default class UserController {
         res,
         200,
         buildPage(result.users, result.total, params),
-        "Users retrieved successfully"
+        'Users retrieved successfully',
       );
     } catch (error) {
       next(error);
     }
   }
 }
-

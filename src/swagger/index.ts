@@ -29,7 +29,7 @@ export function setupSwagger(app: Application): void {
         docExpansion: 'list',
         filter: true,
       },
-    })
+    }),
   );
 
   logger.info('[Swagger] Documentation initialized at /api/docs');

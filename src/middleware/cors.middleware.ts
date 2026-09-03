@@ -12,7 +12,7 @@ export const ORIGIN_SHAPE = /^https?:\/\/[^/]+$/;
  * ============================================================================
  * DEFAULT ALLOWED ORIGINS (Ecosystem Mapping & Architectural Rationale)
  * ============================================================================
- * 
+ *
  * 1. WHY ARE THERE DIFFERENT PORTS?
  *    In modern fullstack architectures, different frontend frameworks default to
  *    their own local dev server ports:
@@ -20,14 +20,14 @@ export const ORIGIN_SHAPE = /^https?:\/\/[^/]+$/;
  *    - Port 3000 -> Next.js / Nuxt 3 Dev Server (Node/Nitro default)
  *    - Port 5173 -> Vue 3 / React Vite Server (Vite default)
  *    - Port 8080 -> Secondary Client / Mobile Emulator / Micro-frontend Preview
- * 
+ *
  *    Additionally, real-world systems often have MULTIPLE DISTINCT FRONTENDS
  *    talking to the SAME backend simultaneously:
  *    Example from `mapanytime`:
  *      - Customer Web App: running on http://localhost:5173
  *      - Admin / Merchant Portal: running on http://localhost:4200 (or 3000)
  *      - Mobile / Hybrid Shell: running on http://localhost:8080
- * 
+ *
  * 2. WHAT IF WE USE A SINGLE FRONTEND ONLY?
  *    - If your project only uses ONE frontend (for example, Angular 19 only),
  *      you simply set `CORS_ORIGIN=http://localhost:4200` in your `.env` file!
@@ -35,7 +35,7 @@ export const ORIGIN_SHAPE = /^https?:\/\/[^/]+$/;
  *    - The `DEFAULT_ORIGINS` array below is provided as a starter convenience
  *      so that any frontend in this workspace can connect immediately in local dev
  *      without requiring manual `.env` tweaks.
- * 
+ *
  * 3. WHY A UNIFIED ALLOWLIST FOR BOTH HTTP & SOCKET.IO?
  *    - Modeled after `mapanytime-api`: Having both HTTP and WebSockets share
  *      the exact same origin allowlist prevents "split-brain" CORS bugs (where
@@ -49,7 +49,7 @@ const DEFAULT_ORIGINS = [
   'http://localhost:4200', // Angular 19 Client (angular-template-v4)
   'http://localhost:3000', // Next.js / Nuxt 3 Client (next-template-v1 / nuxt-template-v2)
   'http://localhost:5173', // Vue 3 / Vite Client (vue-template-v3 / mapanytime-market-web)
-  'http://localhost:8080'  // Secondary frontend / Mobile dev preview
+  'http://localhost:8080', // Secondary frontend / Mobile dev preview
 ];
 
 /**
@@ -70,7 +70,10 @@ export const allowedOrigins = parseAllowedOrigins();
 /**
  * Validates whether an origin is permitted by the allowlist
  */
-export function isOriginAllowed(origin: string | undefined, allowed: string[] = allowedOrigins): boolean {
+export function isOriginAllowed(
+  origin: string | undefined,
+  allowed: string[] = allowedOrigins,
+): boolean {
   // Allow curl, Postman, mobile apps, or same-origin server-to-server requests without Origin header
   if (!origin) return true;
   if (process.env.NODE_ENV === 'development') return true;
@@ -105,4 +108,3 @@ export const corsMiddleware = cors({
     'X-Correlation-Id',
   ],
 });
-

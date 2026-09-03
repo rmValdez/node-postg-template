@@ -11,7 +11,13 @@ export class QuizController {
       const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : undefined;
       const tenantId = (req as any).tenant?.id || undefined;
 
-      const data = await QuizService.getQuestions({ tenantId, category, difficulty, search, limit });
+      const data = await QuizService.getQuestions({
+        tenantId,
+        category,
+        difficulty,
+        search,
+        limit,
+      });
       return responseSuccess(res, 200, data, 'Quiz questions retrieved from PostgreSQL');
     } catch (error) {
       next(error);
@@ -35,10 +41,18 @@ export class QuizController {
     try {
       const tenantId = (req as any).tenant?.id || undefined;
       const userId = (req as any).user?.id || undefined;
-      const sessionId = (req.headers['x-session-id'] as string) || (req.query.sessionId as string) || 'default-guest-session';
+      const sessionId =
+        (req.headers['x-session-id'] as string) ||
+        (req.query.sessionId as string) ||
+        'default-guest-session';
 
       const progress = await QuizService.getProgress({ tenantId, sessionId, userId });
-      return responseSuccess(res, 200, progress || { answers: {}, score: 0, answeredCount: 0 }, 'Quiz progress retrieved from PostgreSQL');
+      return responseSuccess(
+        res,
+        200,
+        progress || { answers: {}, score: 0, answeredCount: 0 },
+        'Quiz progress retrieved from PostgreSQL',
+      );
     } catch (error) {
       next(error);
     }
@@ -48,7 +62,8 @@ export class QuizController {
     try {
       const tenantId = (req as any).tenant?.id || undefined;
       const userId = (req as any).user?.id || undefined;
-      const sessionId = (req.headers['x-session-id'] as string) || req.body.sessionId || 'default-guest-session';
+      const sessionId =
+        (req.headers['x-session-id'] as string) || req.body.sessionId || 'default-guest-session';
       const { answers, score, answeredCount } = req.body;
 
       const progress = await QuizService.saveProgress({
@@ -60,7 +75,12 @@ export class QuizController {
         answeredCount: answeredCount || 0,
       });
 
-      return responseSuccess(res, 200, progress, 'Quiz progress successfully saved to PostgreSQL database');
+      return responseSuccess(
+        res,
+        200,
+        progress,
+        'Quiz progress successfully saved to PostgreSQL database',
+      );
     } catch (error) {
       next(error);
     }
@@ -70,10 +90,16 @@ export class QuizController {
     try {
       const tenantId = (req as any).tenant?.id || undefined;
       const userId = (req as any).user?.id || undefined;
-      const sessionId = (req.headers['x-session-id'] as string) || req.body.sessionId || 'default-guest-session';
+      const sessionId =
+        (req.headers['x-session-id'] as string) || req.body.sessionId || 'default-guest-session';
 
       const progress = await QuizService.resetProgress({ tenantId, sessionId, userId });
-      return responseSuccess(res, 200, progress || { answers: {}, score: 0, answeredCount: 0 }, 'Quiz progress reset in PostgreSQL');
+      return responseSuccess(
+        res,
+        200,
+        progress || { answers: {}, score: 0, answeredCount: 0 },
+        'Quiz progress reset in PostgreSQL',
+      );
     } catch (error) {
       next(error);
     }

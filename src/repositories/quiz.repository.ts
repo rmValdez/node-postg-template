@@ -11,10 +11,7 @@ export default class QuizRepository {
     const where: any = {};
 
     if (options?.tenantId) {
-      where.OR = [
-        { tenantId: options.tenantId },
-        { tenantId: null }
-      ];
+      where.OR = [{ tenantId: options.tenantId }, { tenantId: null }];
     }
 
     if (options?.category && options.category !== 'ALL') {
@@ -43,7 +40,7 @@ export default class QuizRepository {
 
   static async findById(id: number) {
     return prisma.quizQuestion.findUnique({
-      where: { id }
+      where: { id },
     });
   }
 
@@ -56,7 +53,7 @@ export default class QuizRepository {
     if (userId) {
       const byUser = await prisma.quizProgress.findFirst({
         where: { userId, tenantId: tenantId || null },
-        orderBy: { updatedAt: 'desc' }
+        orderBy: { updatedAt: 'desc' },
       });
       if (byUser) return byUser;
     }
@@ -65,7 +62,7 @@ export default class QuizRepository {
       where: {
         sessionId,
         tenantId: tenantId || null,
-      }
+      },
     });
   }
 
@@ -92,7 +89,7 @@ export default class QuizRepository {
           score,
           answeredCount,
           userId: userId || existing.userId,
-        }
+        },
       });
     }
 
@@ -104,7 +101,7 @@ export default class QuizRepository {
         answers,
         score,
         answeredCount,
-      }
+      },
     });
   }
 
@@ -120,7 +117,7 @@ export default class QuizRepository {
           answers: {},
           score: 0,
           answeredCount: 0,
-        }
+        },
       });
     }
     return null;

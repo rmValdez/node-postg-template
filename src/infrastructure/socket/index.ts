@@ -50,7 +50,9 @@ export function initSocket(server: HttpServer): Server {
         joinedRooms.push(room);
         void socket.join(room);
       }
-      logger.info(`[Socket.IO] Socket ${socket.id} subscribed to notifications for user: ${payload.userId}`);
+      logger.info(
+        `[Socket.IO] Socket ${socket.id} subscribed to notifications for user: ${payload.userId}`,
+      );
     });
 
     // Generic Room Joining (e.g. workspace, dashboard, or chat)

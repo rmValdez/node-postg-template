@@ -1,17 +1,17 @@
-import express from "express";
-import rateLimit from "express-rate-limit";
-import helmet from "helmet";
-import router from "./routes";
-import { isDev } from "./config";
-import setup from "./setup";
-import { corsMiddleware } from "./middleware/cors.middleware";
-import { tenantMiddleware } from "./middleware/tenant.middleware";
-import { errorHandler } from "./middleware/error.middleware";
-import { setupSwagger } from "./swagger";
+import express from 'express';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import router from './routes';
+import { isDev } from './config';
+import setup from './setup';
+import { corsMiddleware } from './middleware/cors.middleware';
+import { tenantMiddleware } from './middleware/tenant.middleware';
+import { errorHandler } from './middleware/error.middleware';
+import { setupSwagger } from './swagger';
 
 const app = express();
 
-app.set("trust proxy", 1);
+app.set('trust proxy', 1);
 
 app.use(corsMiddleware);
 app.options('*', corsMiddleware);
@@ -30,20 +30,20 @@ if (!isDev) app.use(limiter);
 
 // Set up security headers
 app.use(helmet());
-app.disable("x-powered-by");
+app.disable('x-powered-by');
 
 // Setup Swagger API Documentation
 setupSwagger(app);
 
 // Use router for routing
-app.use("/api", router);
+app.use('/api', router);
 
 // Error Handling
 app.use(errorHandler);
 
 // Run setup
 setup().catch((err) => {
-  console.log("Setup failed:", err);
+  console.log('Setup failed:', err);
 });
 
 export default app;

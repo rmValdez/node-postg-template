@@ -15,5 +15,3 @@ initSocket(server);
 server.listen(PORT, () => {
   logger.info(`Server is running on port ${PORT} in ${NODE_ENV} mode`);
 });
-
-

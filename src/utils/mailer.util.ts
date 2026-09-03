@@ -84,7 +84,7 @@ export async function sendEmail({
 }): Promise<string> {
   if (!isMailerConfigured()) {
     logger.warn(`[Mailer:Mock] Email to ${to} skipped because mailer is not configured in .env`);
-    return "mock-message-id";
+    return 'mock-message-id';
   }
 
   const mailOptions: SendMailOptions = {

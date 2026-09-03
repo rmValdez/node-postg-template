@@ -1,21 +1,21 @@
-import { UserRole } from "@prisma/client";
+import { UserRole } from '@prisma/client';
 
 export const PERMISSIONS = {
   // User permissions
-  USERS_READ: "users:read",
-  USERS_CREATE: "users:create",
-  USERS_UPDATE: "users:update",
-  USERS_DELETE: "users:delete",
+  USERS_READ: 'users:read',
+  USERS_CREATE: 'users:create',
+  USERS_UPDATE: 'users:update',
+  USERS_DELETE: 'users:delete',
 
   // Dashboard permissions
-  DASHBOARD_VIEW: "dashboard:view",
+  DASHBOARD_VIEW: 'dashboard:view',
 
   // Settings permissions
-  SETTINGS_MANAGE: "settings:manage",
+  SETTINGS_MANAGE: 'settings:manage',
 
   // Sandbox & Quiz
-  SANDBOX_ACCESS: "sandbox:access",
-  QUIZ_MANAGE: "quiz:manage",
+  SANDBOX_ACCESS: 'sandbox:access',
+  QUIZ_MANAGE: 'quiz:manage',
 } as const;
 
 export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
@@ -47,10 +47,7 @@ export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
     PERMISSIONS.SANDBOX_ACCESS,
     PERMISSIONS.QUIZ_MANAGE,
   ],
-  [UserRole.USER]: [
-    PERMISSIONS.DASHBOARD_VIEW,
-    PERMISSIONS.SANDBOX_ACCESS,
-  ],
+  [UserRole.USER]: [PERMISSIONS.DASHBOARD_VIEW, PERMISSIONS.SANDBOX_ACCESS],
 };
 
 export function getPermissionsForRole(role: UserRole | string | undefined): Permission[] {

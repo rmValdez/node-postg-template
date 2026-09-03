@@ -1,6 +1,6 @@
-import { REDIS_TTL_SECONDS } from "../config";
-import logger from "./logger";
-import RedisUtil from "./redis.util";
+import { REDIS_TTL_SECONDS } from '../config';
+import logger from './logger';
+import RedisUtil from './redis.util';
 
 export default class CacheUtil {
   static async get<T = any>(key: string): Promise<T | null> {
@@ -14,11 +14,7 @@ export default class CacheUtil {
     }
   }
 
-  static async set(
-    key: string,
-    value: any,
-    ttlSeconds?: number,
-  ): Promise<void> {
+  static async set(key: string, value: any, ttlSeconds?: number): Promise<void> {
     try {
       const serialized = JSON.stringify(value);
       const ttl = ttlSeconds || REDIS_TTL_SECONDS;
@@ -52,9 +48,9 @@ export default class CacheUtil {
   static async flushAll(): Promise<void> {
     try {
       await RedisUtil.client.flushAll();
-      logger.info("[CacheUtil] Redis cache flushed successfully");
+      logger.info('[CacheUtil] Redis cache flushed successfully');
     } catch (error) {
-      logger.error("[CacheUtil:flushAll] Failed to flush cache:", error);
+      logger.error('[CacheUtil:flushAll] Failed to flush cache:', error);
       throw error;
     }
   }

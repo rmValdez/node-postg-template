@@ -57,9 +57,8 @@ export async function tenantMiddleware(req: TenantRequest, res: Response, next: 
 
       const ctx = getContext();
       if (ctx) {
-        return asyncLocalStorage.run(
-          { ...ctx, tenantId: tenant.id, tenantSlug: tenant.slug },
-          () => next(),
+        return asyncLocalStorage.run({ ...ctx, tenantId: tenant.id, tenantSlug: tenant.slug }, () =>
+          next(),
         );
       }
     }

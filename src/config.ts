@@ -4,9 +4,12 @@ dotenv.config();
 export const PORT = process.env.PORT || 3002;
 export const NODE_ENV = process.env.NODE_ENV || 'development';
 
-export const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET || 'accesssecret123';
-export const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || process.env.JWT_REFRESH_SECRET || 'refreshsecret123';
-export const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRY || process.env.JWT_EXPIRY || '1d';
+export const ACCESS_TOKEN_SECRET =
+  process.env.ACCESS_TOKEN_SECRET || process.env.JWT_SECRET || 'accesssecret123';
+export const REFRESH_TOKEN_SECRET =
+  process.env.REFRESH_TOKEN_SECRET || process.env.JWT_REFRESH_SECRET || 'refreshsecret123';
+export const ACCESS_TOKEN_EXPIRY =
+  process.env.ACCESS_TOKEN_EXPIRY || process.env.JWT_EXPIRY || '1d';
 export const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRY || '7d';
 
 export const DATABASE_URL = process.env.DATABASE_URL;
@@ -54,8 +57,11 @@ export const S3_CDN_URL = process.env.S3_CDN_URL || '';
 export const MAILER_EMAIL = process.env.MAILER_EMAIL || process.env.SMTP_USER || '';
 export const MAILER_PASSWORD = process.env.MAILER_PASSWORD || process.env.SMTP_PASS || '';
 export const MAILER_FROM_NAME = process.env.MAILER_FROM_NAME || 'System';
-export const MAILER_TRANSPORT_HOST = process.env.MAILER_TRANSPORT_HOST || process.env.SMTP_HOST || 'smtp.gmail.com';
-export const MAILER_TRANSPORT_PORT = parseInt(process.env.MAILER_TRANSPORT_PORT || process.env.SMTP_PORT || '587');
+export const MAILER_TRANSPORT_HOST =
+  process.env.MAILER_TRANSPORT_HOST || process.env.SMTP_HOST || 'smtp.gmail.com';
+export const MAILER_TRANSPORT_PORT = parseInt(
+  process.env.MAILER_TRANSPORT_PORT || process.env.SMTP_PORT || '587',
+);
 export const MAILER_TRANSPORT_SECURE = process.env.MAILER_TRANSPORT_SECURE === 'true';
 
 // Backward-compatible SMTP aliases
