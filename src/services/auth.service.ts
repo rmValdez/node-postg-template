@@ -148,10 +148,27 @@ export default class AuthSvc {
       { expiresIn: REFRESH_TOKEN_EXPIRY as any },
     );
 
+    // Parse REFRESH_TOKEN_EXPIRY (e.g. '7d', '30d', '24h')
+    let refreshDurationMs = 7 * 24 * 60 * 60 * 1000;
+    if (typeof REFRESH_TOKEN_EXPIRY === 'string') {
+      const match = REFRESH_TOKEN_EXPIRY.match(/^(\d+)([smhd])$/);
+      if (match) {
+        const value = parseInt(match[1]);
+        const unit = match[2];
+        const multipliers: Record<string, number> = {
+          s: 1000,
+          m: 60 * 1000,
+          h: 60 * 60 * 1000,
+          d: 24 * 60 * 60 * 1000,
+        };
+        refreshDurationMs = value * (multipliers[unit] || 86400000);
+      }
+    }
+
     await AuthRepo.createSession({
       userId: user.id,
       refreshToken,
-      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      expiresAt: new Date(Date.now() + refreshDurationMs),
       provider,
     });
 
