@@ -4,6 +4,8 @@ import userRoute from './user.route';
 import fileUploadRoute from './fileUpload.route';
 import angularRoute from './angular.route';
 import quizRoute from './quiz.routes';
+import partnerRoute from './partner.route';
+import healthRouter from './health.route';
 
 const router = express.Router();
 
@@ -18,5 +20,7 @@ router.use('/v1/users', userRoute);
 router.use('/v1/angular', angularRoute);
 router.use('/v1/quiz', quizRoute);
 router.use('/v1/file-uploads', fileUploadRoute);
+router.use('/v1/partner', partnerRoute);
+router.use('/health', healthRouter);
 
 export default router;

@@ -1,6 +1,5 @@
 import UserRepository from "../repositories/user.repository";
 import { getPermissionsForRole } from "../constants/permissions.constant";
-import logger from "../utils/logger";
 
 export default class UserService {
   /**
@@ -11,7 +10,7 @@ export default class UserService {
     if (!user) {
       throw { status: 404, message: "User not found" };
     }
-    const { password, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
     return {
       ...userWithoutPassword,
       permissions: getPermissionsForRole(user.role),

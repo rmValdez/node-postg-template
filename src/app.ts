@@ -7,6 +7,7 @@ import setup from "./setup";
 import { corsMiddleware } from "./middleware/cors.middleware";
 import { tenantMiddleware } from "./middleware/tenant.middleware";
 import { errorHandler } from "./middleware/error.middleware";
+import { setupSwagger } from "./swagger";
 
 const app = express();
 
@@ -30,6 +31,9 @@ if (!isDev) app.use(limiter);
 // Set up security headers
 app.use(helmet());
 app.disable("x-powered-by");
+
+// Setup Swagger API Documentation
+setupSwagger(app);
 
 // Use router for routing
 app.use("/api", router);

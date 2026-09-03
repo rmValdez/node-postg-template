@@ -1,5 +1,4 @@
 import { prisma } from '../utils/prisma';
-import { UserRole } from '@prisma/client';
 
 export default class UserRepository {
   /**

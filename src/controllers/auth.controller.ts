@@ -58,7 +58,22 @@ export default class AuthController {
 
     try {
       const data = await AuthSvc.refreshToken(value.refreshToken);
-      return res.json(data);
+      return res.json({ message: "Token refreshed successfully", data });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * Get current authenticated user profile
+   */
+  static async me(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = (req as any).user?.id;
+      if (!userId) return res.status(401).json({ status: 'error', statusCode: 401, message: 'Unauthorized' });
+
+      const user = (req as any).user?.email ? (req as any).user : await AuthSvc.getCurrentUser(userId);
+      return res.status(200).json({ status: 'success', statusCode: 200, message: 'User profile retrieved', data: user });
     } catch (error) {
       next(error);
     }
@@ -71,6 +86,7 @@ export default class AuthController {
     try {
       const { refreshToken } = req.body;
       const userId = (req as any).user?.id;
+      if (!userId) return res.status(401).json({ status: 'error', statusCode: 401, message: 'Unauthorized' });
       const result = await AuthSvc.logout(userId, refreshToken);
       return res.json(result);
     } catch (error) {
