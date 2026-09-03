@@ -5,8 +5,6 @@
  *     description: Authentication, session management, and profile access
  *   - name: Users
  *     description: User management and directory queries
- *   - name: Angular
- *     description: Angular learning topics, sections, and progress tracking
  *   - name: Quiz
  *     description: Interactive quiz questions, submissions, and tenant scorecards
  */

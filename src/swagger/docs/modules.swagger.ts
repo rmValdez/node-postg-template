@@ -23,14 +23,6 @@
  *       200:
  *         description: Paginated users list
  *
- * /v1/angular/topics:
- *   get:
- *     summary: Retrieve Angular syllabus topics and lessons
- *     tags: [Angular]
- *     responses:
- *       200:
- *         description: List of Angular topics
- *
  * /v1/quiz/questions:
  *   get:
  *     summary: Retrieve question bank for active tenant (Angular / Vue / Default)
