@@ -85,10 +85,16 @@ export default class AuthRepo {
   }
 
   static async findUserById(userId: string) {
+    // Backs both `authenticate` (sets req.user) and GET /auth/me, which
+    // returns this straight through to the client — omit the password hash
+    // so it can never leak, here or in any future response built from it.
     return prisma.user.findFirst({
       where: {
         id: userId,
         isDeleted: false,
+      },
+      omit: {
+        password: true,
       },
       include: {
         avatar: {
