@@ -7,7 +7,7 @@ Reference documentation for building and consuming the REST API.
 ## Base URL
 
 ```
-http://localhost:5002/api
+http://localhost:3002/api
 ```
 
 All endpoints are prefixed with `/api/v1` except health checks.
@@ -21,10 +21,10 @@ This API uses **JWT Bearer tokens**.
 ### Register / Login Flow
 
 ```
-POST /api/v1/auth/register       → returns { accessToken, refreshToken }
-POST /api/v1/auth/login          → returns { accessToken, refreshToken }
-POST /api/v1/auth/refresh-token  → exchange refreshToken for a new accessToken
-POST /api/v1/auth/logout         → invalidate tokens
+POST /api/v1/auth/register       → returns { message, data: { user, accessToken, refreshToken } }
+POST /api/v1/auth/login          → returns { message, data: { user, accessToken, refreshToken } }
+POST /api/v1/auth/refresh        → exchange refreshToken for a new accessToken
+POST /api/v1/auth/logout         → invalidate session
 ```
 
 ### Using the Token
@@ -35,7 +35,7 @@ Add the access token to every authenticated request:
 Authorization: Bearer <accessToken>
 ```
 
-Tokens expire after `1d` by default (`ACCESS_TOKEN_EXPIRY` in `.env`).
+Tokens expire after `15m` by default (`ACCESS_TOKEN_EXPIRY` in `.env`), with refresh tokens expiring after `7d` (`REFRESH_TOKEN_EXPIRY`).
 
 ---
 
