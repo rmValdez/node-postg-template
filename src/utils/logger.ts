@@ -1,4 +1,5 @@
 import winston from 'winston';
+import { getContext } from './async-context';
 
 const levels = {
   error: 0,
@@ -24,13 +25,35 @@ const colors = {
 
 winston.addColors(colors);
 
-const format = winston.format.combine(
+// Custom format: inject requestId and correlationId from AsyncLocalStorage
+const addContext = winston.format((info) => {
+  const ctx = getContext();
+  if (ctx) {
+    info.requestId = ctx.requestId;
+    info.correlationId = ctx.correlationId;
+  }
+  return info;
+});
+
+// Development: colorized, human-readable with IDs appended
+const devFormat = winston.format.combine(
   winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss:ms' }),
+  addContext(),
   winston.format.colorize({ all: true }),
-  winston.format.printf(
-    (info) => `${info.timestamp} ${info.level}: ${info.message}`,
-  ),
+  winston.format.printf((info) => {
+    const idStr = info.correlationId ? ` [corr:${info.correlationId}]` : '';
+    return `${info.timestamp} ${info.level}${idStr}: ${info.message}`;
+  }),
 );
+
+// Production: structured JSON for log aggregators (Datadog/CloudWatch)
+const prodFormat = winston.format.combine(
+  winston.format.timestamp(),
+  addContext(),
+  winston.format.json(),
+);
+
+const format = process.env.NODE_ENV === 'production' ? prodFormat : devFormat;
 
 const transports = [
   new winston.transports.Console(),

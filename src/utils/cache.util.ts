@@ -58,4 +58,19 @@ export default class CacheUtil {
       throw error;
     }
   }
+
+  /**
+   * Cache-aside helper: return the cached value if present, otherwise run
+   * `fn`, cache its result with `ttlSeconds`, and return it.
+   */
+  static async remember<T>(key: string, ttlSeconds: number, fn: () => Promise<T>): Promise<T> {
+    const hit = await this.get<T>(key);
+    if (hit !== null && hit !== undefined) return hit;
+
+    const fresh = await fn();
+    if (fresh !== null && fresh !== undefined) {
+      await this.set(key, fresh, ttlSeconds);
+    }
+    return fresh;
+  }
 }
