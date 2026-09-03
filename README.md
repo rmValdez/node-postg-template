@@ -161,6 +161,53 @@ npm run worker
 
 ---
 
+## 🔗 Connecting a Frontend Template
+
+Of the frontend templates in this ecosystem, **only `next-template-v1` is wired to this backend.** `vue-template-v3` and `angular-template-v4` talk to `nuxt-template-v2` instead (a separate Nitro/Nuxt server on port 3000) — don't point them here, their auth contract and response shapes differ.
+
+**`next-template-v1`** (`Repo: next-template-v1`, dev port 3000):
+
+```env
+# .env.local
+NEXT_PUBLIC_API_URL=http://localhost:5002
+```
+
+### Auth Contract
+
+All endpoints are mounted under `/api/v1`. `register`/`login`/`me`/`refresh-token` responses are wrapped `{ message, data }`; `logout` returns `{ message, data: null }`.
+
+```
+POST   /api/v1/auth/register      { email, password, username, name? }
+POST   /api/v1/auth/login         { email, password }
+GET    /api/v1/auth/me            (Bearer token required)
+POST   /api/v1/auth/refresh-token { refreshToken }   — issues a new access token only; does not rotate the refresh token
+POST   /api/v1/auth/logout        (Bearer token required) { refreshToken? }
+```
+
+Example login response:
+
+```json
+{
+  "message": "Login successful",
+  "data": {
+    "accessToken": "eyJhbGc...",
+    "refreshToken": "eyJhbGc...",
+    "user": {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "email": "user@example.com",
+      "username": "johndoe",
+      "name": "John Doe",
+      "role": "USER",
+      "onboardingCompleted": false
+    }
+  }
+}
+```
+
+CORS reflects any origin in dev (`isDev ? true : CORS_ORIGIN`), so no extra config is needed to call this from `next-template-v1`'s dev server locally.
+
+---
+
 ## 📂 Project Structure
 
 ```text
