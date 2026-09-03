@@ -19,6 +19,16 @@
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@parcel/watcher",
+      "@prisma/client",
+      "@prisma/engines",
+      "bcrypt",
+      "prisma",
+      "unrs-resolver"
+    ]
+  },
   "dependencies": {
     "@prisma/client": "^6.19.2",
     "@sentry/node": "^10.73.0",
