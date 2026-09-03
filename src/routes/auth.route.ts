@@ -137,4 +137,26 @@ router.post('/refresh-token', AuthController.refreshToken);
  */
 router.post('/logout', authenticate, AuthController.logout);
 
+/**
+ * @swagger
+ * /v1/auth/me:
+ *   get:
+ *     summary: Get current authenticated user profile
+ *     tags: [Auth]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Returns the authenticated user's profile
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/SuccessResponse' }
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema: { $ref: '#/components/schemas/ErrorResponse' }
+ */
+router.get('/me', authenticate, AuthController.me);
+
 export default router;
