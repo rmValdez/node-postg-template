@@ -25,7 +25,7 @@ export async function tenantMiddleware(req: TenantRequest, res: Response, next: 
       (req.headers['x-tenant-id'] as string) ||
       (req.query.tenantId as string) ||
       (req.query.tenant as string) ||
-      'angular-v4'; // Default fallback
+      'default'; // Generic fallback
 
     const tenant = await prisma.tenant.findUnique({
       where: { slug: rawTenantSlug },

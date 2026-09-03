@@ -5,6 +5,11 @@ export async function seedTenants(prisma: PrismaClient) {
 
   const tenants = [
     {
+      slug: 'default',
+      name: 'Default Organization',
+      description: 'Default root tenant for standard API access',
+    },
+    {
       slug: 'angular-v4',
       name: 'Angular 19 Master Template',
       description: 'Angular 19 Standalone Signals & TanStack Query client',
