@@ -7,43 +7,83 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum TenantRole {
+  OWNER
+  ADMIN
+  MANAGER
+  MEMBER
+  VIEWER
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
 model Tenant {
   id          String         @id @default(uuid())
   slug        String         @unique // "angular-v4", "next-v1", "vue-v3", "nuxt-v2", "default"
   name        String
+  domain      String?        @unique // Custom domain support (e.g., app.customdomain.com)
   description String?
+  status      TenantStatus   @default(ACTIVE)
   isActive    Boolean        @default(true)
+  settings    Json?          // Tenant-specific branding, theme, configuration
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
   users       User[]
+  memberships TenantMembership[]
   quizQuestions QuizQuestion[]
   quizProgress QuizProgress[]
+
+  @@map("tenants")
+}
+
+model TenantMembership {
+  id        String     @id @default(uuid())
+  tenantId  String
+  userId    String
+  role      TenantRole @default(MEMBER)
+  status    String     @default("ACTIVE")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@map("tenant_memberships")
 }
 
 model User {
-  id                  String         @id @default(uuid())
+  id                  String             @id @default(uuid())
   tenantId            String?
-  email               String         @unique
-  password            String?        // Optional for social-only users
+  email               String             @unique
+  password            String?            // Optional for social-only users
   name                String?
-  username            String         @unique
-  role                UserRole       @default(USER)
-  isActive            Boolean        @default(true)
+  username            String             @unique
+  role                UserRole           @default(USER)
+  isActive            Boolean            @default(true)
   lastLoginAt         DateTime?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
   avatarId            String?
-  isDeleted           Boolean        @default(false)
-  isEmailVerified     Boolean        @default(true)
-  onboardingCompleted Boolean        @default(false)
+  isDeleted           Boolean            @default(false)
+  isEmailVerified     Boolean            @default(true)
+  onboardingCompleted Boolean            @default(false)
   
-  tenant              Tenant?        @relation(fields: [tenantId], references: [id], onDelete: SetNull)
-  avatar              File?          @relation("UserAvatar", fields: [avatarId], references: [id])
+  tenant              Tenant?            @relation(fields: [tenantId], references: [id], onDelete: SetNull)
+  avatar              File?              @relation("UserAvatar", fields: [avatarId], references: [id])
   sessions            Session[]
+  memberships         TenantMembership[]
   quizProgress        QuizProgress[]
 
   @@index([tenantId])
+  @@map("users")
 }
 
 model Session {
@@ -51,10 +91,14 @@ model Session {
   userId            String
   refreshToken      String?   @unique
   provider          String    @default("local") // "local" | "google" | "github" | "apple"
-  providerUserId    String?   // OAuth user ID for social login
+  providerUserId    String?   // OAuth user ID for social logins
   accessToken       String?   // OAuth access token
   scopes            String?
   avatarUrl         String?
+  ipAddress         String?   // Origin IP for session tracking
+  userAgent         String?   // Client device / browser agent
+  lastUsedAt        DateTime?
+  revokedAt         DateTime? // Soft-revocation
   expiresAt         DateTime
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
@@ -63,17 +107,22 @@ model Session {
 
   @@index([userId])
   @@index([provider, providerUserId])
+  @@map("sessions")
 }
 
 model File {
   id        String    @id @default(uuid())
   filename  String?
   fileUrl   String?
+  mimeType  String?   // e.g. "image/png", "application/pdf"
+  fileSize  Int?      // Size in bytes
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
   metaData  Json?
   users     User[]    @relation("UserAvatar")
+
+  @@map("files")
 }
 
 enum UserRole {
@@ -101,6 +150,7 @@ model QuizQuestion {
   @@index([tenantId])
   @@index([category])
   @@index([difficulty])
+  @@map("quiz_questions")
 }
 
 model QuizProgress {
@@ -120,4 +170,5 @@ model QuizProgress {
   @@unique([tenantId, sessionId])
   @@index([tenantId])
   @@index([userId])
+  @@map("quiz_progress")
 }
