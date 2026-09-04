@@ -1,6 +1,6 @@
-# node-postg-template
+# node-postg-backend-template
 
-A production-ready Node.js boilerplate using TypeScript, Express, and Prisma with PostgreSQL.
+A production-ready Node.js backend boilerplate using TypeScript, Express, and Prisma with PostgreSQL.
 
 ## Features
 

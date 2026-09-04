@@ -10,7 +10,7 @@ This document is the master specification for the entire **`rm-template`** ecosy
 graph TD
     subgraph BACKEND_ENGINES ["Backend & Identity Providers"]
         NUXT_API["nuxt-template-v2\n(Nitro Fullstack & JWT Server :3000)"]
-        NODE_API["node-postg-template\n(Express + Prisma + Postgres)"]
+        NODE_API["node-postg-backend-template\n(Express + Prisma + Postgres)"]
     end
 
     subgraph CLIENT_TEMPLATES ["Frontend Master Templates"]

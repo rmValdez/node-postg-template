@@ -34,5 +34,14 @@ jobs:
       - name: Generate Prisma Client
         run: npx prisma generate
 
+      - name: Architecture Boundary Validation
+        run: pnpm run validate
+
+      - name: Lint Check
+        run: pnpm run lint
+
+      - name: Run Tests
+        run: pnpm run test
+
       - name: Build TypeScript
         run: pnpm run build

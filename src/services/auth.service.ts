@@ -139,13 +139,13 @@ export default class AuthSvc {
    */
   private static async generateAuthResponse(user: any, provider: string) {
     const accessToken = jwt.sign({ userId: user.id }, ACCESS_TOKEN_SECRET, {
-      expiresIn: ACCESS_TOKEN_EXPIRY as any,
+      expiresIn: ACCESS_TOKEN_EXPIRY as jwt.SignOptions['expiresIn'],
     });
 
     const refreshToken = jwt.sign(
       { userId: user.id, jti: crypto.randomBytes(16).toString('hex') },
       REFRESH_TOKEN_SECRET,
-      { expiresIn: REFRESH_TOKEN_EXPIRY as any },
+      { expiresIn: REFRESH_TOKEN_EXPIRY as jwt.SignOptions['expiresIn'] },
     );
 
     // Parse REFRESH_TOKEN_EXPIRY (e.g. '7d', '30d', '24h')
