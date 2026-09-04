@@ -29,6 +29,11 @@ export async function seedTenants(prisma: PrismaClient) {
       name: 'Nuxt 3 Nitro Fullstack',
       description: 'Nuxt 3 SSR and Nitro server client',
     },
+    {
+      slug: 'flutter-v1',
+      name: 'Flutter Master Template',
+      description: 'Flutter 3.x Riverpod + GoRouter cross-platform client',
+    },
   ];
 
   for (const tenant of tenants) {
