@@ -37,8 +37,11 @@ graph TD
 | **Server State** | TanStack Angular Query v5 | Prisma ORM 6.x + Redis Cache | TanStack React Query v5 | TanStack Vue Query v5 | Nuxt `useFetch` / Nitro |
 | **Client State / Storage** | Angular Signals (`sessionStorage`) | In-Memory / Redis Sessions | Zustand v5 (`sessionStorage`) | Pinia v3 | Pinia v3 |
 | **Realtime WebSockets** | Socket.IO Client / WebSocket | Socket.IO 4.8+ Gateway | Socket.IO Client / SSE | Socket.IO Client | Nitro WebSockets |
-| **Styling & Theme** | Tailwind CSS v3.4 + HSL | N/A (JSON API & WebSocket) | Tailwind CSS v3.4 + HSL | Tailwind CSS v3.4 + HSL | Tailwind CSS v3.4 + HSL |
-| **Contract Validation**| Zod v3.24 | Joi / Zod | Zod v3/v4 | Zod v3/v4 | Zod v3/v4 |
+| **Contract Validation**| Zod v4 (`^4.4.3`) | Joi 17 / Zod v4 | Zod v4 (`^4.4.3`) | Zod v4 (`^4.4.3`) | Zod v4 (`^4.4.3`) |
+| **Unit Testing** | Vitest 3 | Jest 30 | Vitest 3 | Vitest 3 | Vitest 3 |
+| **E2E Testing** | Playwright | Supertest | Playwright | Playwright | Playwright |
+| **Component Workshop** | Storybook 8 | Swagger UI (`/api-docs`) | Storybook 8 | Storybook 8 | Storybook 8 |
+| **Git Quality Hooks** | Husky + commitlint + lint-staged | Husky + lint-staged | Husky + commitlint + lint-staged | Husky + commitlint + lint-staged | Husky + commitlint + lint-staged |
 
 ---
 

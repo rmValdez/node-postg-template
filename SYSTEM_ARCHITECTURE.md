@@ -35,10 +35,10 @@ graph TD
 | **Server State** | TanStack React Query v5 | TanStack Vue Query v5 | Nuxt `useFetch` / Nitro | TanStack Angular Query v5 |
 | **Client / UI State** | Zustand v5 | Pinia v3 | Pinia v3 | Angular Signals (`signal()`) |
 | **Styling & Theme** | Tailwind CSS v3.4 + HSL | Tailwind CSS v3.4 + HSL | Tailwind CSS v3.4 + HSL | Tailwind CSS v3.4 + HSL |
-| **API Contract Validation**| Zod v3/v4 | Zod v3/v4 | Zod v3/v4 | Zod v3/v4 |
+| **API Contract Validation**| Zod v4 (`^4.4.3`) | Zod v4 (`^4.4.3`) | Zod v4 (`^4.4.3`) | Zod v4 (`^4.4.3`) |
 | **Package Manager** | `pnpm` 9.x | `pnpm` 9.x | `pnpm` 9.x | `pnpm` 9.x |
-| **Testing** | Vitest + Playwright | Vitest + Playwright | Vitest | Karma / Vitest |
-| **Component Workshop** | Storybook 8 | Storybook 8 | Tailwind Viewer | Standalone Storybook |
+| **Testing** | Vitest + Playwright | Vitest + Playwright | Vitest + Playwright | Vitest + Playwright |
+| **Component Workshop** | Storybook 8 | Storybook 8 | Storybook 8 | Storybook 8 |
 
 ---
 
