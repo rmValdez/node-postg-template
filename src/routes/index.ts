@@ -15,6 +15,7 @@ router.get('/v1', (_, res) => {
 });
 
 router.use('/v1/auth', authRoute);
+router.use('/v1', authRoute);
 router.use('/v1/users', userRoute);
 router.use('/v1/quiz', quizRoute);
 router.use('/v1/file-uploads', fileUploadRoute);

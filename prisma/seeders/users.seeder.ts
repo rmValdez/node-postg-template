@@ -9,6 +9,14 @@ export async function seedUsers(prisma: PrismaClient) {
 
   const users = [
     {
+      email: "superadmin@example.com",
+      username: "superadmin",
+      name: "Super Administrator",
+      role: UserRole.SUPER_ADMIN,
+      password: "Password123!",
+      isEmailVerified: true,
+    },
+    {
       email: "admin@example.com",
       username: "admin",
       name: "System Admin",

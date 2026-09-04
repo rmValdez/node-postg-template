@@ -50,6 +50,8 @@ const DEFAULT_ORIGINS = [
   'http://localhost:3000', // Next.js / Nuxt 3 Client (next-template-v1 / nuxt-template-v2)
   'http://localhost:5173', // Vue 3 / Vite Client (vue-template-v3 / mapanytime-market-web)
   'http://localhost:8080', // Secondary frontend / Mobile dev preview
+  'http://localhost:8085', // Flutter Web Client (flutter_template_v1)
+  'http://127.0.0.1:8085', // Flutter Web Client (127.0.0.1)
 ];
 
 /**
@@ -77,6 +79,7 @@ export function isOriginAllowed(
   // Allow curl, Postman, mobile apps, or same-origin server-to-server requests without Origin header
   if (!origin) return true;
   if (process.env.NODE_ENV === 'development') return true;
+  if (origin.startsWith('http://localhost:') || origin.startsWith('http://127.0.0.1:')) return true;
   return allowed.includes(origin);
 }
 
@@ -104,6 +107,10 @@ export const corsMiddleware = cors({
     'Accept',
     'x-tenant-id',
     'X-Tenant-Id',
+    'x-tenant-slug',
+    'X-Tenant-Slug',
+    'x-session-id',
+    'X-Session-Id',
     'x-correlation-id',
     'X-Correlation-Id',
   ],
